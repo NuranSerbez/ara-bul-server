@@ -78,11 +78,23 @@ def scrape_television_data(links):
                             key = sanitize_column_name(th.text.strip())  
                             value = td.text.strip()  
                             specs[key] = value  
+  
+            # Extracting the price  
+            price_tag = soup.find('span', id='offering-price')  
+            if price_tag:  
+                current_price_before_point = price_tag.find('span', {'data-bind': "markupText:'currentPriceBeforePoint'"}).text.strip()  
+                current_price_after_point = price_tag.find('span', {'data-bind': "markupText:'currentPriceAfterPoint'"}).text.strip()  
+                price = f"{current_price_before_point},{current_price_after_point} TL"  
+                specs['price'] = price  
+            else:  
+                specs['price'] = None  
+  
             televisions.append(Television(link, specs))  
             logging.info(f"Scraped data for URL: {link}")  
         except Exception as e:  
             logging.error(f"Error scraping {link}: {e}")  
     return televisions  
+ 
   
 def to_dataframe(televisions):  
     data = [tv.specs for tv in televisions]  
@@ -131,7 +143,13 @@ def df_to_sql(df, table_name):
 url = 'https://www.hepsiburada.com/ara?q=televizyon&siralama=coksatan'  
 links = scrape_television_links(url)  
 televisions = scrape_television_data(links)  
+  
+# Verify the extracted data  
+for tv in televisions:  
+    logging.info(tv.specs)  
+  
 df = to_dataframe(televisions)  
+ 
   
 # Print the first few rows of the DataFrame to inspect  
 print(df.head())  
