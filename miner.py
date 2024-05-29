@@ -3,8 +3,7 @@ import logging
 import pandas as pd  
 from sqlalchemy import create_engine  
 from difflib import SequenceMatcher  
-  
-# Setting up logging  
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')  
   
 class Television:  
@@ -28,8 +27,8 @@ def turkish_to_latin(text):
     return text  
   
 def sanitize_column_name(column_name):  
-    """Sanitize the column name by converting Turkish characters to Latin,   
-    replacing spaces with underscores, and removing special characters."""  
+    """Sanitize the column name by converting Turkish characters to Latin,  
+       replacing spaces with underscores, and removing special characters."""  
     column_name = turkish_to_latin(column_name)  
     sanitized = re.sub(r'[^a-zA-Z0-9_]', '', column_name.replace(' ', '_'))  
     return sanitized.lower()  
@@ -123,15 +122,25 @@ def search_database(user_input):
       
     return sorted_results  
   
-def main(user_input):  
+def run_miner(user_input):  
     """Main function to process user input and return sorted results."""  
     results = search_database(user_input)  
+    output = []  
     for similarity, row in results:  
-        model_name = row.get('url', 'Unknown')  
-        price = row.get('price', 'Unknown')  
-        print(f"Similarity: {similarity:.2f}% - Model: {model_name} - Price: {price}")  
+        url = row.get('url', 'Unknown')  
+        price = row.get('price', 'Unknown')
+        cozunurluk_piksel = row.get("cozunurluk_piksel", "Unknown")
+
+        output.append({  
+            'similarity': similarity,  
+            'url': url,  
+            'price': price,
+            "cozunurluk_piksel" : cozunurluk_piksel
+        })  
+    return output  
   
 if __name__ == "__main__":  
     user_input = input("Enter TV specifications: ")  
-    main(user_input)  
-
+    results = run_miner(user_input)  
+    for result in results:  
+        print(result)  
