@@ -3,7 +3,7 @@
 # Function to run scraper with proper error handling
 run_scraper() {
     echo "Running scraper..."
-    python scraper.py
+   # python scraper.py
     return $?
 }
 
@@ -75,6 +75,22 @@ fi
 MAX_RETRIES=3
 RETRY_COUNT=0
 SCRAPER_SUCCESS=false
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    echo "Running scraper (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
+    
+    if run_scraper; then
+        SCRAPER_SUCCESS=true
+        echo "Scraper completed successfully"
+        break
+    else
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+            echo "Scraper failed, waiting before retry..."
+            sleep $((5 * RETRY_COUNT))  # Exponential backoff
+        fi
+    fi
+done
 
 if [ "$SCRAPER_SUCCESS" = false ]; then
     echo "WARNING: Scraper failed after $MAX_RETRIES attempts"
